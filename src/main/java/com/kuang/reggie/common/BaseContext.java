@@ -1,7 +1,7 @@
 package com.kuang.reggie.common;
 
 /**
- * 基于ThreadLocal封装工具类，用户保存和获取当前登录用户id
+ * 基于ThreadLocal封装工具类，用户保存和获取当前登录用户的id
  */
 public class BaseContext {
     private static ThreadLocal<Long> threadLocal = new ThreadLocal<>();
