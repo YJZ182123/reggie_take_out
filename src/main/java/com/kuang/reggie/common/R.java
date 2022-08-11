@@ -4,11 +4,13 @@ import lombok.Data;
 import java.util.HashMap;
 import java.util.Map;
 
-//通用的返回结果类
+/**
+ * 通用返回结果，服务端响应的数据最终都会封装成此对象
+ * @param <T>
+ */
 @Data
 public class R<T> {
 
-    //与login.html中的code，msg，data对应
     private Integer code; //编码：1成功，0和其它数字为失败
 
     private String msg; //错误信息
@@ -17,7 +19,6 @@ public class R<T> {
 
     private Map map = new HashMap(); //动态数据
 
-    //响应成功之后
     public static <T> R<T> success(T object) {
         R<T> r = new R<T>();
         r.data = object;
@@ -25,7 +26,6 @@ public class R<T> {
         return r;
     }
 
-    //响应失败之后
     public static <T> R<T> error(String msg) {
         R r = new R();
         r.msg = msg;

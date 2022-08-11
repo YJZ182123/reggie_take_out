@@ -5,7 +5,7 @@ const getCategoryPage = (params) => {
     method: 'get',
     params
   })
-}
+};
 
 // 编辑页面反查详情接口
 const queryCategoryById = (id) => {
@@ -13,16 +13,16 @@ const queryCategoryById = (id) => {
     url: `/category/${id}`,
     method: 'get'
   })
-}
+};
 
 // 删除当前列的接口
-const deleCategory = (ids) => {
+const deleCategory = (id) => {
   return $axios({
     url: '/category',
     method: 'delete',
-    params: { ids }
+    params: { id }
   })
-}
+};
 
 // 修改接口
 const editCategory = (params) => {
@@ -31,7 +31,7 @@ const editCategory = (params) => {
     method: 'put',
     data: { ...params }
   })
-}
+};
 
 // 新增接口
 const addCategory = (params) => {
@@ -40,4 +40,4 @@ const addCategory = (params) => {
     method: 'post',
     data: { ...params }
   })
-}
+};

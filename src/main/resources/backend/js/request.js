@@ -1,12 +1,12 @@
 (function (win) {
-  axios.defaults.headers['Content-Type'] = 'application/json;charset=utf-8'
+  axios.defaults.headers['Content-Type'] = 'application/json;charset=utf-8';
   // 创建axios实例
   const service = axios.create({
     // axios中请求配置有baseURL选项，表示请求URL公共部分
     baseURL: '/',
     // 超时
-    timeout: 10000
-  })
+    timeout: 1000000
+  });
   // request拦截器
   service.interceptors.request.use(config => {
     // 是否需要设置 token
@@ -38,24 +38,30 @@
     }
     return config
   }, error => {
-      console.log(error)
+      console.log(error);
       Promise.reject(error)
-  })
+  });
 
   // 响应拦截器
   service.interceptors.response.use(res => {
+      console.log('---响应拦截器---',res);
+      // 未设置状态码则默认成功状态
+      const code = res.data.code;
+      // 获取错误信息
+      const msg = res.data.msg;
+      console.log('---code---',code);
       if (res.data.code === 0 && res.data.msg === 'NOTLOGIN') {// 返回登录页面
-        console.log('---/backend/page/login/login.html---')
-        localStorage.removeItem('userInfo')
+        console.log('---/backend/page/login/login.html---',code);
+        localStorage.removeItem('userInfo');
         window.top.location.href = '/backend/page/login/login.html'
       } else {
         return res.data
       }
     },
     error => {
-      console.log('err' + error)
+      console.log('err' + error);
       let { message } = error;
-      if (message == "Network Error") {
+      if (message === "Network Error") {
         message = "后端接口连接异常";
       }
       else if (message.includes("timeout")) {
@@ -68,9 +74,9 @@
         message: message,
         type: 'error',
         duration: 5 * 1000
-      })
+      });
       return Promise.reject(error)
     }
-  )
+  );
   win.$axios = service
 })(window);

@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
+@Slf4j
 public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implements OrderService {
 
     @Autowired
@@ -39,18 +39,17 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
      * 用户下单
      * @param orders
      */
-    @Override
     @Transactional
     public void submit(Orders orders) {
-        //获取当前用户id
+        //获得当前用户id
         Long userId = BaseContext.getCurrentId();
 
         //查询当前用户的购物车数据
-        LambdaQueryWrapper<ShoppingCart> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(ShoppingCart::getUserId,userId);
-        List<ShoppingCart> shoppingCarts = shoppingCartService.list(queryWrapper);
+        LambdaQueryWrapper<ShoppingCart> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ShoppingCart::getUserId,userId);
+        List<ShoppingCart> shoppingCarts = shoppingCartService.list(wrapper);
 
-        if(shoppingCarts == null || shoppingCarts.size()==0){
+        if(shoppingCarts == null || shoppingCarts.size() == 0){
             throw new CustomException("购物车为空，不能下单");
         }
 
@@ -61,16 +60,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         Long addressBookId = orders.getAddressBookId();
         AddressBook addressBook = addressBookService.getById(addressBookId);
         if(addressBook == null){
-            throw new CustomException("地址信息有误，不能下单");
+            throw new CustomException("用户地址信息有误，不能下单");
         }
 
-        //订单号
-        long orderId = IdWorker.getId();
+        long orderId = IdWorker.getId();//订单号
 
-        //原子操作，保证线程安全
         AtomicInteger amount = new AtomicInteger(0);
 
-        List<OrderDetail> orderDetails = shoppingCarts.stream().map((item)->{
+        List<OrderDetail> orderDetails = shoppingCarts.stream().map((item) -> {
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrderId(orderId);
             orderDetail.setNumber(item.getNumber());
@@ -84,28 +81,28 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
             return orderDetail;
         }).collect(Collectors.toList());
 
-        //向订单表插入数据，一条数据
-        orders.setNumber(String.valueOf(orderId));
+
         orders.setId(orderId);
         orders.setOrderTime(LocalDateTime.now());
         orders.setCheckoutTime(LocalDateTime.now());
         orders.setStatus(2);
-        orders.setAmount(new BigDecimal(amount.get())); //总金额
+        orders.setAmount(new BigDecimal(amount.get()));//总金额
         orders.setUserId(userId);
+        orders.setNumber(String.valueOf(orderId));
         orders.setUserName(user.getName());
         orders.setConsignee(addressBook.getConsignee());
         orders.setPhone(addressBook.getPhone());
-        orders.setAddress((addressBook.getProvinceName()==null?"":addressBook.getProvinceName())
-                +(addressBook.getCityName()==null?"":addressBook.getCityName())
-                +(addressBook.getDistrictName()==null?"":addressBook.getDistrictName())
-                +(addressBook.getDetail()==null?"":addressBook.getDetail()));
-
+        orders.setAddress((addressBook.getProvinceName() == null ? "" : addressBook.getProvinceName())
+                + (addressBook.getCityName() == null ? "" : addressBook.getCityName())
+                + (addressBook.getDistrictName() == null ? "" : addressBook.getDistrictName())
+                + (addressBook.getDetail() == null ? "" : addressBook.getDetail()));
+        //向订单表插入数据，一条数据
         this.save(orders);
-        
-        //向订单明细表插入数据，可能是多条数据
+
+        //向订单明细表插入数据，多条数据
         orderDetailService.saveBatch(orderDetails);
 
         //清空购物车数据
-        shoppingCartService.remove(queryWrapper);
+        shoppingCartService.remove(wrapper);
     }
 }
